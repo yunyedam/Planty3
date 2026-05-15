@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Planty"/>
+  <title>Planty 🌱</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0E0E0E; }
+    #root { max-width: 390px; margin: 0 auto; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+import { useState } from "react";
+
+const NEON=”#AAFF00”, DARK=”#0E0E0E”, DARK2=”#1A1A1A”, DARK3=”#242424”, DARK4=”#2E2E2E”;
+const WHITE=”#F5F5F0”, GRAY=”#666”, RED=”#FF4444”;
+const _now=new Date();
+const TODAY=`${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,"0")}-${String(_now.getDate()).padStart(2,"0")}`;
+const MONTH=[“1월”,“2월”,“3월”,“4월”,“5월”,“6월”,“7월”,“8월”,“9월”,“10월”,“11월”,“12월”];
+
+const PLANT_DB = {
+
+“방울토마토”: { sproutDays:7,  bloomDays:70,  waterDays:3,  icon:“tomato”  },
+“토마토”:     { sproutDays:7,  bloomDays:75,  waterDays:3,  icon:“tomato”  },
+“고추”:       { sproutDays:10, bloomDays:80,  waterDays:3,  icon:“pepper”  },
+“파프리카”:   { sproutDays:10, bloomDays:90,  waterDays:3,  icon:“pepper”  },
+“오이”:       { sproutDays:5,  bloomDays:50,  waterDays:2,  icon:“leaf”    },
+“호박”:       { sproutDays:7,  bloomDays:55,  waterDays:3,  icon:“leaf”    },
+“애호박”:     { sproutDays:7,  bloomDays:50,  waterDays:3,  icon:“leaf”    },
+“가지”:       { sproutDays:10, bloomDays:80,  waterDays:3,  icon:“leaf”    },
+“상추”:       { sproutDays:5,  bloomDays:45,  waterDays:2,  icon:“leaf”    },
+“청상추”:     { sproutDays:5,  bloomDays:45,  waterDays:2,  icon:“leaf”    },
+“적상추”:     { sproutDays:5,  bloomDays:45,  waterDays:2,  icon:“leaf”    },
+“시금치”:     { sproutDays:7,  bloomDays:40,  waterDays:2,  icon:“leaf”    },
+“배추”:       { sproutDays:5,  bloomDays:80,  waterDays:3,  icon:“leaf”    },
+“양배추”:     { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“브로콜리”:   { sproutDays:7,  bloomDays:80,  waterDays:3,  icon:“leaf”    },
+“콜리플라워”: { sproutDays:7,  bloomDays:85,  waterDays:3,  icon:“leaf”    },
+“무”:         { sproutDays:5,  bloomDays:60,  waterDays:3,  icon:“leaf”    },
+“당근”:       { sproutDays:14, bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“감자”:       { sproutDays:14, bloomDays:90,  waterDays:4,  icon:“sprout”  },
+“고구마”:     { sproutDays:14, bloomDays:120, waterDays:4,  icon:“sprout”  },
+“양파”:       { sproutDays:10, bloomDays:150, waterDays:4,  icon:“leaf”    },
+“마늘”:       { sproutDays:14, bloomDays:180, waterDays:5,  icon:“leaf”    },
+“대파”:       { sproutDays:10, bloomDays:90,  waterDays:3,  icon:“herb”    },
+“쪽파”:       { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“herb”    },
+“부추”:       { sproutDays:10, bloomDays:60,  waterDays:2,  icon:“herb”    },
+“깻잎”:       { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“leaf”    },
+“들깨”:       { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“참깨”:       { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“옥수수”:     { sproutDays:7,  bloomDays:80,  waterDays:3,  icon:“sprout”  },
+“콩”:         { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“sprout”  },
+“팥”:         { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“sprout”  },
+“완두콩”:     { sproutDays:10, bloomDays:70,  waterDays:3,  icon:“sprout”  },
+“강낭콩”:     { sproutDays:7,  bloomDays:65,  waterDays:3,  icon:“sprout”  },
+“녹두”:       { sproutDays:5,  bloomDays:70,  waterDays:3,  icon:“sprout”  },
+“도라지”:     { sproutDays:14, bloomDays:365, waterDays:4,  icon:“flower”  },
+“더덕”:       { sproutDays:21, bloomDays:365, waterDays:4,  icon:“flower”  },
+“고사리”:     { sproutDays:30, bloomDays:730, waterDays:3,  icon:“leaf”    },
+“쑥”:         { sproutDays:14, bloomDays:90,  waterDays:3,  icon:“herb”    },
+“머위”:       { sproutDays:14, bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“미나리”:     { sproutDays:10, bloomDays:60,  waterDays:2,  icon:“herb”    },
+“근대”:       { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“leaf”    },
+“케일”:       { sproutDays:7,  bloomDays:70,  waterDays:2,  icon:“leaf”    },
+“루꼴라”:     { sproutDays:5,  bloomDays:40,  waterDays:2,  icon:“leaf”    },
+“아욱”:       { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“leaf”    },
+“열무”:       { sproutDays:5,  bloomDays:35,  waterDays:2,  icon:“leaf”    },
+“봄동”:       { sproutDays:5,  bloomDays:50,  waterDays:2,  icon:“leaf”    },
+“치커리”:     { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“leaf”    },
+“셀러리”:     { sproutDays:14, bloomDays:90,  waterDays:2,  icon:“herb”    },
+“파슬리”:     { sproutDays:14, bloomDays:75,  waterDays:2,  icon:“herb”    },
+“생강”:       { sproutDays:21, bloomDays:180, waterDays:4,  icon:“leaf”    },
+“토란”:       { sproutDays:14, bloomDays:180, waterDays:4,  icon:“leaf”    },
+
+“바질”:       { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“herb”    },
+“민트”:       { sproutDays:10, bloomDays:90,  waterDays:2,  icon:“herb”    },
+“로즈마리”:   { sproutDays:21, bloomDays:180, waterDays:5,  icon:“herb”    },
+“타임”:       { sproutDays:14, bloomDays:120, waterDays:4,  icon:“herb”    },
+“오레가노”:   { sproutDays:10, bloomDays:90,  waterDays:3,  icon:“herb”    },
+“세이지”:     { sproutDays:14, bloomDays:120, waterDays:4,  icon:“herb”    },
+“딜”:         { sproutDays:7,  bloomDays:70,  waterDays:3,  icon:“herb”    },
+“고수”:       { sproutDays:10, bloomDays:60,  waterDays:3,  icon:“herb”    },
+“레몬밤”:     { sproutDays:10, bloomDays:90,  waterDays:2,  icon:“herb”    },
+“차이브”:     { sproutDays:10, bloomDays:80,  waterDays:2,  icon:“herb”    },
+“캐모마일”:   { sproutDays:7,  bloomDays:60,  waterDays:3,  icon:“flower”  },
+“스테비아”:   { sproutDays:14, bloomDays:120, waterDays:3,  icon:“herb”    },
+
+“장미”:       { sproutDays:30, bloomDays:180, waterDays:3,  icon:“flower”  },
+“라벤더”:     { sproutDays:21, bloomDays:120, waterDays:5,  icon:“flower”  },
+“해바라기”:   { sproutDays:7,  bloomDays:75,  waterDays:3,  icon:“sunflower”},
+“국화”:       { sproutDays:14, bloomDays:150, waterDays:3,  icon:“flower”  },
+“튤립”:       { sproutDays:21, bloomDays:120, waterDays:4,  icon:“flower”  },
+“수선화”:     { sproutDays:21, bloomDays:120, waterDays:4,  icon:“flower”  },
+“백합”:       { sproutDays:30, bloomDays:180, waterDays:4,  icon:“flower”  },
+“카네이션”:   { sproutDays:14, bloomDays:150, waterDays:3,  icon:“flower”  },
+“팬지”:       { sproutDays:10, bloomDays:60,  waterDays:3,  icon:“flower”  },
+“페튜니아”:   { sproutDays:10, bloomDays:70,  waterDays:3,  icon:“flower”  },
+“임파첸스”:   { sproutDays:14, bloomDays:90,  waterDays:2,  icon:“flower”  },
+“봉선화”:     { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“flower”  },
+“채송화”:     { sproutDays:7,  bloomDays:50,  waterDays:2,  icon:“flower”  },
+“코스모스”:   { sproutDays:7,  bloomDays:70,  waterDays:3,  icon:“flower”  },
+“금잔화”:     { sproutDays:7,  bloomDays:50,  waterDays:3,  icon:“flower”  },
+“나팔꽃”:     { sproutDays:7,  bloomDays:60,  waterDays:2,  icon:“flower”  },
+“수국”:       { sproutDays:30, bloomDays:365, waterDays:3,  icon:“flower”  },
+“벚꽃”:       { sproutDays:30, bloomDays:365, waterDays:4,  icon:“flower”  },
+“진달래”:     { sproutDays:21, bloomDays:365, waterDays:4,  icon:“flower”  },
+“무궁화”:     { sproutDays:14, bloomDays:365, waterDays:3,  icon:“flower”  },
+“목련”:       { sproutDays:30, bloomDays:365, waterDays:4,  icon:“tree”    },
+
+“선인장”:     { sproutDays:28, bloomDays:365, waterDays:14, icon:“cactus”  },
+“다육식물”:   { sproutDays:21, bloomDays:365, waterDays:10, icon:“cactus”  },
+“알로에”:     { sproutDays:14, bloomDays:365, waterDays:10, icon:“cactus”  },
+“몬스테라”:   { sproutDays:21, bloomDays:730, waterDays:7,  icon:“leaf”    },
+“스파티필럼”: { sproutDays:14, bloomDays:180, waterDays:4,  icon:“flower”  },
+“산세베리아”: { sproutDays:21, bloomDays:730, waterDays:14, icon:“leaf”    },
+“포토스”:     { sproutDays:14, bloomDays:730, waterDays:7,  icon:“leaf”    },
+“스킨답서스”: { sproutDays:14, bloomDays:730, waterDays:7,  icon:“leaf”    },
+“페페로미아”: { sproutDays:14, bloomDays:365, waterDays:7,  icon:“leaf”    },
+“고무나무”:   { sproutDays:21, bloomDays:730, waterDays:7,  icon:“tree”    },
+“벤자민”:     { sproutDays:21, bloomDays:730, waterDays:7,  icon:“tree”    },
+“율마”:       { sproutDays:21, bloomDays:730, waterDays:5,  icon:“tree”    },
+
+“딸기”:       { sproutDays:14, bloomDays:90,  waterDays:3,  icon:“tomato”  },
+“수박”:       { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“참외”:       { sproutDays:7,  bloomDays:80,  waterDays:3,  icon:“leaf”    },
+“멜론”:       { sproutDays:7,  bloomDays:90,  waterDays:3,  icon:“leaf”    },
+“블루베리”:   { sproutDays:21, bloomDays:365, waterDays:4,  icon:“flower”  },
+“포도”:       { sproutDays:30, bloomDays:365, waterDays:4,  icon:“leaf”    },
+
+“벼”:         { sproutDays:7,  bloomDays:120, waterDays:1,  icon:“sprout”  },
+“밀”:         { sproutDays:7,  bloomDays:150, waterDays:4,  icon:“sprout”  },
+“보리”:       { sproutDays:7,  bloomDays:150, waterDays:4,  icon:“sprout”  },
+“귀리”:       { sproutDays:7,  bloomDays:120, waterDays:4,  icon:“sprout”  },
+“수수”:       { sproutDays:7,  bloomDays:120, waterDays:3,  icon:“sprout”  },
+“default”:    { sproutDays:14, bloomDays:120, waterDays:3,  icon:“sprout”  },
+};
+
+const getPlantDB=(name)=>{
+for(const [k,v] of Object.entries(PLANT_DB)){
+if(name&&name.includes(k)) return v;
+}
+return PLANT_DB.default;
+};
+
+const addDays=(ds,d)=>{const dt=new Date(ds);dt.setDate(dt.getDate()+d);return dt.toISOString().split(“T”)[0];};
+const getSprout=(p)=>addDays(p.startDate, getPlantDB(p.name).sproutDays);
+const getBloom =(p)=>addDays(p.startDate, getPlantDB(p.name).bloomDays);
+const dLeft=(p)=>p.waterDays-p.lastWatered;
+const getGrowth=(tl)=>tl.filter(e=>e.height!=null||e.leaves!=null)
+.map(e=>({date:e.date.slice(5).replace(”-”,”/”),height:e.height,leaves:e.leaves}));
+
+const STAGES=[
+{id:“seed”,  label:“씨앗”,color:”#C8A84A”,days:0},
+{id:“sprout”,label:“발아”,color:NEON,     days:14},
+{id:“growth”,label:“생장”,color:”#4AFF8A”,days:45},
+{id:“bloom”, label:“개화”,color:”#FF6EB4”,days:120},
+];
+const si=(s)=>STAGES.findIndex(x=>x.id===s);
+
+const SYNC_DATA={
+weather:{temp:“13°C”,humidity:“58%”,condition:“맑음”,minTemp:“4°C”,maxTemp:“16°C”,rain:“10%”,wind:“3m/s”,
+advice:“오늘은 일교차가 크니 저녁엔 실내로 이동하고, 낮 시간대에 물주기가 적합해요.”},
+rda:{cropOfMonth:“딸기”,
+tip:“3월 딸기는 웃거름 시비 시기예요. 황산칼륨 복합비료를 포기당 5g 기준으로 시비하세요.”,
+pestWarning:“진딧물·응애 발생 주의보 — 잎 뒷면을 정기적으로 확인하고, 발생 시 친환경 살충제를 사용하세요.”,
+source:“농촌진흥청 농업기술포털 농사로 (2026.03 기준)”},
+gene:{featured:“청양고추 (토종)”,
+desc:“강한 매운맛과 내병성을 가진 한국 대표 토종 품종. 캡사이신 함량이 높아 약용·식용으로 활용도가 높아요.”,
+tip:“3월은 고추 육묘 시작 적기예요. 28°C 이상 온도에서 발아율이 높아져요.”,
+source:“국립농업과학원 농업유전자원센터”},
+};
+
+const mkPlants=()=>[
+{id:1,name:“방울토마토”,variety:“미니 토마토”,stage:“growth”,
+startDate:“2026-02-10”,waterDays:3,lastWatered:1,
+checklist:{seed:true,sprout:true,growth:false,bloom:false},
+timeline:[
+{id:“t1”,date:“2026-02-10”,note:“씨앗을 심었어요.”,stage:“seed”,height:null,leaves:null},
+{id:“t2”,date:“2026-02-17”,note:“드디어 싹이 났다!!”,stage:“sprout”,height:1.5,leaves:2},
+{id:“t3”,date:“2026-03-01”,note:“잎이 4장으로 늘었어요.”,stage:“growth”,height:8,leaves:4},
+{id:“t4”,date:“2026-03-15”,note:“줄기가 단단해졌어요.”,stage:“growth”,height:15,leaves:8},
+]},
+{id:2,name:“라벤더”,variety:“잉글리시 라벤더”,stage:“sprout”,
+startDate:“2026-03-01”,waterDays:5,lastWatered:3,
+checklist:{seed:true,sprout:true,growth:false,bloom:false},
+timeline:[
+{id:“t5”,date:“2026-03-01”,note:“씨앗 파종”,stage:“seed”,height:null,leaves:null},
+{id:“t6”,date:“2026-03-22”,note:“작은 싹 발견!”,stage:“sprout”,height:2,leaves:2},
+]},
+{id:3,name:“선인장”,variety:“황금 선인장”,stage:“growth”,
+startDate:“2025-11-01”,waterDays:14,lastWatered:5,
+checklist:{seed:true,sprout:true,growth:true,bloom:false},
+timeline:[
+{id:“t7”,date:“2025-11-01”,note:“파종 완료”,stage:“seed”,height:null,leaves:null},
+{id:“t8”,date:“2025-11-29”,note:“싹 확인”,stage:“sprout”,height:0.5,leaves:1},
+{id:“t9”,date:“2026-01-10”,note:“쑥쑥 크는 중”,stage:“growth”,height:5,leaves:null},
+]},
+{id:4,name:“바질”,variety:“스위트 바질”,stage:“seed”,
+startDate:“2026-03-25”,waterDays:2,lastWatered:1,
+checklist:{seed:true,sprout:false,growth:false,bloom:false},
+timeline:[
+{id:“t10”,date:“2026-03-25”,note:“씨앗 파종 완료”,stage:“seed”,height:null,leaves:null},
+]},
+];
+
+const Ic=({n,sz=20,c=WHITE,sw=1.4})=>{
+const s={width:sz,height:sz,display:“inline-block”,verticalAlign:“middle”,flexShrink:0};
+const P={fill:“none”,stroke:c,strokeWidth:sw,strokeLinecap:“round”,strokeLinejoin:“round”};
+const icons={
+
+```
+home:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path {...P} d="M9 21V13h6v8"/></svg>,
+cal:    <svg style={s} viewBox="0 0 24 24"><rect {...P} x="3" y="4" width="18" height="18" rx="2"/><path {...P} d="M16 2v4M8 2v4M3 10h18"/><circle fill={c} cx="8" cy="15" r="1"/><circle fill={c} cx="12" cy="15" r="1"/><circle fill={c} cx="16" cy="15" r="1"/></svg>,
+book:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path {...P} d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path {...P} d="M8 7h8M8 11h5"/></svg>,
+sync:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c-1.66 0-3-4.03-3-9s1.34-9 3-9m0 18c1.66 0 3-4.03 3-9s-1.34-9-3-9m-9 9a9 9 0 019-9"/></svg>,
+
+plus:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M12 5v14M5 12h14"/></svg>,
+edit:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path {...P} d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>,
+trash:  <svg style={s} viewBox="0 0 24 24"><polyline {...P} points="3 6 5 6 21 6"/><path {...P} d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/><path {...P} d="M10 11v6M14 11v6"/></svg>,
+back:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M19 12H5M12 5l-7 7 7 7"/></svg>,
+check:  <svg style={s} viewBox="0 0 24 24"><polyline {...P} points="20 6 9 17 4 12"/></svg>,
+
+leaf:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M17 8C8 10 5.9 16.17 3.82 19.85"/><path {...P} d="M3.82 19.85C9 17 16 15 21 4c0 0-8 1-15 9"/><path {...P} d="M12.5 12.5c-2 2.5-3 5.5-3 7"/></svg>,
+sprout: <svg style={s} viewBox="0 0 24 24"><path {...P} d="M12 22V12"/><path {...P} d="M12 12C12 7 7 4 4 5c0 4 3 7 8 7z"/><path {...P} d="M12 12c0-5 5-8 8-7 0 4-3 7-8 7z"/></svg>,
+flower: <svg style={s} viewBox="0 0 24 24"><circle {...P} cx="12" cy="12" r="3"/><path {...P} d="M12 2a3 3 0 000 6 3 3 0 000-6zM12 16a3 3 0 000 6 3 3 0 000-6zM2 12a3 3 0 006 0 3 3 0 00-6 0zM16 12a3 3 0 006 0 3 3 0 00-6 0z"/><path {...P} d="M5.6 5.6a3 3 0 004.2 4.2 3 3 0 00-4.2-4.2zM14.2 14.2a3 3 0 004.2 4.2 3 3 0 00-4.2-4.2zM5.6 18.4a3 3 0 004.2-4.2 3 3 0 00-4.2 4.2zM14.2 9.8a3 3 0 004.2-4.2 3 3 0 00-4.2 4.2z"/></svg>,
+seed:   <svg style={s} viewBox="0 0 24 24"><ellipse {...P} cx="12" cy="14" rx="6" ry="5"/><path {...P} d="M12 9V4"/><path {...P} d="M9 6.5c1-2 3-3 3-3s2 1 3 3"/></svg>,
+tree:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M12 22V13"/><path {...P} d="M8 13H4l8-8 8 8h-4"/><path {...P} d="M6 17H2l10-10 10 10h-4"/></svg>,
+pot:    <svg style={s} viewBox="0 0 24 24"><path {...P} d="M8 22h8M10 22v-4M14 22v-4"/><path {...P} d="M5 10h14l-1 8H6z"/><path {...P} d="M4 10h16"/><path {...P} d="M12 10V6M9 8c0-2 1.5-4 3-4s3 2 3 4"/></svg>,
+water:  <svg style={s} viewBox="0 0 24 24"><path {...P} d="M12 2L6 12a7 7 0 0012 0z"/><path {...P} d="M10 14a3 3 0 004 0"/></svg>,
+sun:    <svg style={s} viewBox="0 0 24 24"><circle {...P} cx="12" cy="12" r="4"/><path {...P} d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>,
+temp:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>,
+rain:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M20 17.58A5 5 0 0018 8h-1.26A8 8 0 104 15.25"/><line {...P} x1="8" y1="19" x2="8" y2="21"/><line {...P} x1="8" y1="13" x2="8" y2="15"/><line {...P} x1="16" y1="19" x2="16" y2="21"/><line {...P} x1="16" y1="13" x2="16" y2="15"/><line {...P} x1="12" y1="21" x2="12" y2="23"/><line {...P} x1="12" y1="15" x2="12" y2="17"/></svg>,
+wind:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1013 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg>,
+bug:    <svg style={s} viewBox="0 0 24 24"><path {...P} d="M8 2l1.88 1.88M14.12 3.88 16 2"/><path {...P} d="M9 7.13v-1a3.003 3.003 0 116 0v1"/><path {...P} d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6z"/><path {...P} d="M12 20v-9M6.53 9C4.6 8.8 2.96 7.9 2 6.5"/><path {...P} d="M22 6.5c-.96 1.4-2.6 2.3-4.53 2.5"/><path {...P} d="M2 13c1.5 0 3-.8 3-2"/><path {...P} d="M19 11c0 1.2 1.5 2 3 2"/><path {...P} d="M2 19c1.5 0 3-.8 3-2"/><path {...P} d="M19 17c0 1.2 1.5 2 3 2"/></svg>,
+gene:   <svg style={s} viewBox="0 0 24 24"><path {...P} d="M2 12C2 8 6 4 12 4s10 4 10 8"/><path {...P} d="M22 12c0 4-4 8-10 8S2 16 2 12"/><path {...P} d="M12 4v16"/><path {...P} d="M4.93 7l14.14 10"/><path {...P} d="M19.07 7 4.93 17"/></svg>,
+chart:  <svg style={s} viewBox="0 0 24 24"><path {...P} d="M3 3v18h18"/><path {...P} d="M7 16l4-4 4 4 4-6"/></svg>,
+watering:<svg style={s} viewBox="0 0 24 24"><path {...P} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path {...P} d="M14 22V12a2 2 0 00-4 0v10"/><path {...P} d="M8.5 8.5c.5-1 1.5-2 3.5-2s3 1 3.5 2"/></svg>,
+scissors:<svg style={s} viewBox="0 0 24 24"><circle {...P} cx="6" cy="6" r="3"/><circle {...P} cx="6" cy="18" r="3"/><path {...P} d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>,
+shovel: <svg style={s} viewBox="0 0 24 24"><path {...P} d="M3 21l9-9"/><path {...P} d="M12.73 6.27a2.5 2.5 0 013.54 3.53l-1.06 1.06L11.67 7.33z"/><path {...P} d="M18 8l-5-5"/><path {...P} d="M14 4l2-2 4 4-2 2"/></svg>,
+```
+
+};
+return icons[n]||null;
+};
+
+const PlantIc=({type,sz=44,c=NEON,sw=1.3})=>{
+const s={width:sz,height:sz,display:“block”};
+const P={fill:“none”,stroke:c,strokeWidth:sw,strokeLinecap:“round”,strokeLinejoin:“round”};
+const types={
+tomato:  <svg style={s} viewBox="0 0 48 48"><circle {…P} cx=“24” cy=“28” r=“14”/><path {…P} d=“M24 14v-4”/><path {…P} d=“M18 12c2-4 6-5 6-5s4 1 6 5”/><path {…P} d=“M18 28c0 4 2.5 8 6 8”/></svg>,
+flower:  <svg style={s} viewBox="0 0 48 48"><circle {…P} cx=“24” cy=“24” r=“5”/><ellipse {…P} cx=“24” cy=“13” rx=“4” ry=“6”/><ellipse {…P} cx=“24” cy=“35” rx=“4” ry=“6”/><ellipse {…P} cx=“13” cy=“24” rx=“6” ry=“4”/><ellipse {…P} cx=“35” cy=“24” rx=“6” ry=“4”/><path {…P} d=“M24 40v6M21 46h6”/></svg>,
+cactus:  <svg style={s} viewBox="0 0 48 48"><path {…P} d=“M24 42V12”/><path {…P} d=“M24 22c0 0-6 0-6-6V10”/><path {…P} d=“M24 28c0 0 6 0 6-6V16”/><path {…P} d=“M18 10h-4M30 16h4”/><path {…P} d=“M20 42h8”/></svg>,
+herb:    <svg style={s} viewBox="0 0 48 48"><path {…P} d=“M24 40V20”/><path {…P} d=“M24 30c-4-4-10-4-12-2 2 4 8 6 12 2z”/><path {…P} d=“M24 24c4-4 10-4 12-2-2 4-8 6-12 2z”/><path {…P} d=“M24 38c-3-2-7-2-8-1 1 3 5 4 8 1z”/></svg>,
+pepper:  <svg style={s} viewBox="0 0 48 48"><path {…P} d=“M24 12c0 0-2-4 2-6”/><path {…P} d=“M24 12c0 0 4-2 6 2”/><path {…P} d=“M24 12c2 8-2 20-4 26”/><path {…P} d=“M28 14c2 8-2 20-4 26”/><path {…P} d=“M20 38c2 2 6 2 8 0”/></svg>,
+leaf:    <svg style={s} viewBox="0 0 48 48"><path {…P} d=“M10 38c4-16 16-24 28-28C34 24 22 34 10 38z”/><path {…P} d=“M10 38c2-6 6-12 10-16”/></svg>,
+sunflower:<svg style={s} viewBox="0 0 48 48"><circle {…P} cx=“24” cy=“22” r=“7”/><path {…P} d=“M24 6v4M24 34v4M8 22H4M44 22h-4M11.5 9.5l3 3M33.5 33.5l3 3M9.5 34.5l3-3M33.5 10.5l3-3M24 38v8”/></svg>,
+sprout:  <svg style={s} viewBox="0 0 48 48"><path {…P} d=“M24 42V22”/><path {…P} d=“M24 30c0 0-8 0-10-8 4-2 10 2 10 8z”/><path {…P} d=“M24 24c0 0 8-2 10-10-4-2-10 3-10 10z”/><line {…P} x1=“16” y1=“42” x2=“32” y2=“42”/></svg>,
+default: <svg style={s} viewBox="0 0 48 48"><path {…P} d=“M24 42V18”/><path {…P} d=“M24 28c-4-6-10-8-12-6 0 6 6 10 12 6z”/><path {…P} d=“M24 22c4-6 10-8 12-6 0 6-6 10-12 6z”/><line {…P} x1=“18” y1=“42” x2=“30” y2=“42”/></svg>,
+};
+return types[type]||types.default;
+};
+
+const Chart=({timeline})=>{
+const data=getGrowth(timeline);
+if(!data.length) return(
+<div style={{color:GRAY,fontSize:12,textAlign:“center”,padding:24,lineHeight:1.9}}>
+<div style={{marginBottom:8,display:“flex”,justifyContent:“center”}}><Ic n="chart" sz={32} c={DARK4}/></div>
+일지에 키·잎 수를 기록하면<br/>그래프가 자동으로 그려져요
+</div>
+);
+const W=300,H=100,PAD=10,aw=W-PAD*2;
+const n=data.length;
+const mh=Math.max(…data.map(d=>d.height||0),1);
+const ml=Math.max(…data.map(d=>d.leaves||0),1);
+const bw=Math.max(8,Math.min(28,aw/n*0.5));
+const xOf=(i)=>PAD+aw/n*i+aw/n/2;
+return(
+<svg width={W} height={H+44} style={{display:“block”,overflow:“visible”}}>
+{[0,0.5,1].map((r,i)=>(
+<line key={i} x1={PAD} y1={H-H*r} x2={W-PAD} y2={H-H*r}
+stroke=”#333” strokeWidth={1} strokeDasharray={r===0?””:“3,3”}/>
+))}
+{data.map((d,i)=>{
+const x=xOf(i);
+const hh=d.height!=null?Math.max(4,d.height/mh*H):0;
+const lh=d.leaves!=null?Math.max(4,d.leaves/ml*H*0.55):0;
+return(
+<g key={i}>
+{d.height!=null&&<>
+<rect x={x-bw/2} y={H-hh} width={bw} height={hh} fill={NEON} rx={3} opacity={0.88}/>
+<text x={x} y={H-hh-5} textAnchor="middle" fontSize={9} fill={NEON}>{d.height}</text>
+</>}
+{d.leaves!=null&&<>
+<circle cx={x} cy={H-lh} r={5} fill="#FF9F43"/>
+<text x={x+8} y={H-lh+4} fontSize={9} fill="#FF9F43">{d.leaves}</text>
+</>}
+<text x={x} y={H+14} textAnchor="middle" fontSize={8} fill={GRAY}>{d.date}</text>
+</g>
+);
+})}
+<rect x={PAD} y={H+24} width={10} height={10} fill={NEON} rx={2}/>
+<text x={PAD+14} y={H+33} fontSize={9} fill={NEON}>키(cm)</text>
+<circle cx={PAD+58} cy={H+29} r={5} fill="#FF9F43"/>
+<text x={PAD+66} y={H+33} fontSize={9} fill="#FF9F43">잎(장)</text>
+</svg>
+);
+};
+
+const S={
+app:{fontFamily:”‘Noto Sans KR’,sans-serif”,background:DARK,minHeight:“100vh”,maxWidth:390,margin:“0 auto”,color:WHITE,position:“relative”},
+body:{padding:“14px 16px 100px”},
+hdr:{padding:“52px 20px 14px”,background:DARK},
+card:{background:DARK3,borderRadius:16,padding:“14px 16px”,marginBottom:10,border:“1px solid #2a2a2a”},
+lbl:{fontSize:11,color:GRAY,marginBottom:5,display:“block”,letterSpacing:“0.04em”},
+ov:{position:“fixed”,inset:0,background:“rgba(0,0,0,0.88)”,display:“flex”,alignItems:“flex-end”,zIndex:200},
+mb:{background:DARK2,borderRadius:“20px 20px 0 0”,padding:“24px 20px 44px”,width:“100%”,maxWidth:390,margin:“0 auto”,border:“1px solid #2a2a2a”,maxHeight:“90vh”,overflowY:“auto”},
+pill:(c)=>({display:“inline-flex”,alignItems:“center”,gap:4,background:c+“22”,border:`1px solid ${c}44`,borderRadius:20,padding:“3px 9px”,fontSize:10,color:c}),
+tag:(c)=>({fontSize:10,color:c,background:c+“18”,padding:“2px 8px”,borderRadius:8,display:“inline-block”}),
+inp:{width:“100%”,padding:“11px 14px”,borderRadius:12,border:“1px solid #333”,background:DARK3,fontSize:13,color:WHITE,outline:“none”,marginBottom:10,fontFamily:”‘Noto Sans KR’,sans-serif”,display:“block”,boxSizing:“border-box”},
+ta:{width:“100%”,padding:“11px 14px”,borderRadius:12,border:“1px solid #333”,background:DARK3,fontSize:13,color:WHITE,outline:“none”,minHeight:88,resize:“vertical”,marginBottom:10,fontFamily:”‘Noto Sans KR’,sans-serif”,display:“block”,boxSizing:“border-box”},
+pb:(v=“p”,full=false)=>({padding:v===“sm”?“5px 12px”:v===“xs”?“4px 8px”:“12px 18px”,borderRadius:v===“xs”?8:12,border:v===“o”?`1px solid ${NEON}`:“none”,cursor:“pointer”,fontSize:v===“sm”||v===“xs”?11:14,fontFamily:”‘Noto Sans KR’,sans-serif”,fontWeight:600,background:v===“p”?NEON:v===“d”?DARK3:v===“red”?RED:“transparent”,color:v===“p”?DARK:WHITE,width:full?“100%”:“auto”,display:“block”}),
+};
+
+function PlantModal({mode,plant,onSave,onClose}){
+const [name,setName]=useState(plant?.name||””);
+const [variety,setVariety]=useState(plant?.variety||””);
+const [water,setWater]=useState(String(plant?.waterDays||(plant?plant.waterDays:3)));
+const db=getPlantDB(name);
+return(
+<div style={S.ov} onClick={onClose}>
+<div style={S.mb} onClick={e=>e.stopPropagation()}>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:22,color:WHITE,marginBottom:4}}>
+{mode===“add”?“새 식물 추가”:“식물 정보 수정”}
+</div>
+{mode===“add”&&<div style={{fontSize:11,color:GRAY,marginBottom:16}}>이름을 입력하면 발아·개화일이 자동 예측돼요</div>}
+<span style={S.lbl}>식물 이름 *</span>
+<input style={S.inp} placeholder=“예: 방울토마토, 라벤더, 바질…” value={name} onChange={e=>setName(e.target.value)}/>
+<span style={S.lbl}>품종</span>
+<input style={S.inp} placeholder=“품종 (선택)” value={variety} onChange={e=>setVariety(e.target.value)}/>
+<span style={S.lbl}>물주기 주기 (일)</span>
+<input style={S.inp} type=“number” min=“1” value={water} onChange={e=>setWater(e.target.value)}/>
+{name&&(
+<div style={{background:DARK3,borderRadius:10,padding:“10px 14px”,marginBottom:12,border:“1px solid #333”}}>
+<div style={{fontSize:10,color:NEON,marginBottom:6,letterSpacing:“0.06em”}}>농업 DB 기반 예측 (파종일 기준)</div>
+<div style={{display:“flex”,gap:16,fontSize:12,color:GRAY}}>
+<span><Ic n="sprout" sz={13} c={NEON}/> 발아: <span style={{color:WHITE}}>약 {db.sproutDays}일</span></span>
+<span><Ic n="flower" sz={13} c="#FF6EB4"/> 개화: <span style={{color:WHITE}}>약 {db.bloomDays}일</span></span>
+</div>
+</div>
+)}
+<div style={{display:“flex”,gap:10,marginTop:4}}>
+<button style={{…S.pb(“d”),flex:1}} onClick={onClose}>취소</button>
+<button style={{…S.pb(“p”),flex:2}} onClick={()=>{if(name.trim())onSave({name:name.trim(),variety,waterDays:parseInt(water)||db.waterDays});}}>
+{mode===“add”?“파종하기”:“저장하기”}
+</button>
+</div>
+</div>
+</div>
+);
+}
+
+function EntryModal({mode,entry,stage,onSave,onClose}){
+const [note,setNote]=useState(entry?.note||””);
+const [height,setHeight]=useState(entry?.height!=null?String(entry.height):””);
+const [leaves,setLeaves]=useState(entry?.leaves!=null?String(entry.leaves):””);
+return(
+<div style={S.ov} onClick={onClose}>
+<div style={S.mb} onClick={e=>e.stopPropagation()}>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:22,color:WHITE,marginBottom:18}}>
+{mode===“add”?“오늘 일지 쓰기”:“일지 수정”}
+</div>
+<span style={S.lbl}>기록 내용 *</span>
+<textarea style={S.ta} placeholder=“오늘 식물 상태는?” value={note} onChange={e=>setNote(e.target.value)}/>
+<div style={{display:“flex”,gap:10}}>
+<div style={{flex:1}}>
+<span style={S.lbl}>키 (cm)</span>
+<input style={{…S.inp,marginBottom:0}} type=“number” step=“0.1” placeholder=“예: 12.5” value={height} onChange={e=>setHeight(e.target.value)}/>
+</div>
+<div style={{flex:1}}>
+<span style={S.lbl}>잎 수 (장)</span>
+<input style={{…S.inp,marginBottom:0}} type=“number” placeholder=“예: 6” value={leaves} onChange={e=>setLeaves(e.target.value)}/>
+</div>
+</div>
+<div style={{display:“flex”,gap:10,marginTop:14}}>
+<button style={{…S.pb(“d”),flex:1}} onClick={onClose}>취소</button>
+<button style={{…S.pb(“p”),flex:2}} onClick={()=>{
+if(!note.trim()) return;
+onSave({note:note.trim(),height:height?parseFloat(height):null,leaves:leaves?parseInt(leaves):null,stage});
+}}>저장하기</button>
+</div>
+</div>
+</div>
+);
+}
+
+function DelModal({onConfirm,onClose}){
+return(
+<div style={S.ov} onClick={onClose}>
+<div style={{…S.mb,textAlign:“center”}} onClick={e=>e.stopPropagation()}>
+<div style={{display:“flex”,justifyContent:“center”,marginBottom:12}}><Ic n="trash" sz={40} c={RED}/></div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:22,color:WHITE,marginBottom:8}}>정말 삭제할까요?</div>
+<div style={{fontSize:13,color:GRAY,marginBottom:22}}>이 식물과 모든 일지 기록이 삭제돼요.<br/>되돌릴 수 없어요.</div>
+<div style={{display:“flex”,gap:10}}>
+<button style={{…S.pb(“d”),flex:1}} onClick={onClose}>취소</button>
+<button style={{flex:1,padding:“12px”,borderRadius:12,border:“none”,cursor:“pointer”,background:RED,color:WHITE,fontSize:14,fontWeight:600,fontFamily:”‘Noto Sans KR’,sans-serif”}} onClick={onConfirm}>삭제</button>
+</div>
+</div>
+</div>
+);
+}
+
+export default function App(){
+const [plants,setPlants]=useState(mkPlants);
+const [tab,setTab]=useState(“home”);
+const [sel,setSel]=useState(null);
+const [jsub,setJsub]=useState(“timeline”);
+const [calMonth,setCalMonth]=useState(()=>new Date(_now.getFullYear(),_now.getMonth()));
+const [modal,setModal]=useState(null);
+
+const plant=sel?plants.find(p=>p.id===sel):null;
+
+const addPlant=(form)=>{
+const db=getPlantDB(form.name);
+setPlants(prev=>[…prev,{
+id:Date.now(),name:form.name,variety:form.variety,
+stage:“seed”,startDate:TODAY,waterDays:form.waterDays||db.waterDays,lastWatered:0,
+checklist:{seed:true,sprout:false,growth:false,bloom:false},
+timeline:[{id:`t${Date.now()}`,date:TODAY,note:“파종 완료”,stage:“seed”,height:null,leaves:null}],
+}]);
+setModal(null);
+};
+const editPlant=(form)=>{
+setPlants(prev=>prev.map(p=>p.id===modal.plant.id?{…p,…form}:p));
+setModal(null);
+};
+const delPlant=(id)=>{
+setPlants(prev=>prev.filter(p=>p.id!==id));
+if(sel===id){setSel(null);setTab(“home”);}
+setModal(null);
+};
+const addEntry=(form)=>{
+if(!plant) return;
+setPlants(prev=>prev.map(p=>p.id===plant.id?{…p,timeline:[…p.timeline,{id:`t${Date.now()}`,date:TODAY,…form}]}:p));
+setModal(null);
+};
+const editEntry=(form)=>{
+if(!plant) return;
+setPlants(prev=>prev.map(p=>p.id===plant.id?{…p,timeline:p.timeline.map(e=>e.id===modal.entry.id?{…e,…form}:e)}:p));
+setModal(null);
+};
+const delEntry=(eid)=>{
+if(!plant) return;
+setPlants(prev=>prev.map(p=>p.id===plant.id?{…p,timeline:p.timeline.filter(e=>e.id!==eid)}:p));
+};
+const advance=()=>{
+if(!plant) return;
+const i=si(plant.stage); if(i>=3) return;
+const next=STAGES[i+1].id;
+setPlants(prev=>prev.map(p=>p.id===plant.id?{…p,stage:next,checklist:{…p.checklist,[next]:true}}:p));
+};
+const forceStage=(stageId)=>{
+if(!plant) return;
+setPlants(prev=>prev.map(p=>p.id===plant.id?{…p,stage:stageId,checklist:Object.fromEntries(STAGES.map((s,i)=>[s.id,i<=si(stageId)]))}:p));
+};
+
+const Hdr=({t1,t2,sub,back=false})=>(
+<div style={S.hdr}>
+{back&&<button onClick={()=>setTab(“home”)} style={{background:“none”,border:“none”,color:GRAY,cursor:“pointer”,marginBottom:8,display:“flex”,alignItems:“center”,gap:6,padding:0}}>
+<Ic n="back" sz={15} c={GRAY}/><span style={{fontSize:12,color:GRAY}}>홈으로</span>
+</button>}
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,letterSpacing:“0.04em”,lineHeight:1.1,fontSize:28,color:WHITE}}>
+{t1}<span style={{color:NEON}}>{t2}</span>
+</div>
+<div style={{color:GRAY,fontSize:12,marginTop:4,fontWeight:300}}>{sub}</div>
+</div>
+);
+
+const HomeTab=()=>{
+const[feat,…rest]=plants;
+return(
+<div>
+<div style={{...S.hdr,paddingBottom:0}}>
+<div style={{display:“flex”,alignItems:“flex-start”,justifyContent:“space-between”}}>
+<div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:34,color:WHITE,lineHeight:1.1,letterSpacing:“0.03em”}}>
+LET’S GROW YOUR<br/><span style={{color:NEON}}>PLANTS!</span>
+</div>
+<div style={{color:GRAY,fontSize:12,marginTop:4,fontWeight:300}}>씨앗부터 개화까지, 함께 키워요</div>
+</div>
+<button style={{width:44,height:44,background:NEON,borderRadius:12,border:“none”,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”,flexShrink:0,marginTop:4}}
+onClick={()=>setModal({type:“addPlant”})}>
+<Ic n="plus" sz={22} c={DARK}/>
+</button>
+</div>
+</div>
+<div style={{display:“flex”,alignItems:“center”,gap:10,margin:“14px 16px 0”,background:DARK3,borderRadius:12,padding:“10px 14px”,border:“1px solid #2a2a2a”}}>
+<Ic n="sync" sz={14} c={GRAY}/>
+<div style={{flex:1}}><div style={{fontSize:11,color:GRAY}}>농촌진흥청 · 농업유전자원 · 기상청</div></div>
+<button onClick={()=>setTab(“sync”)} style={{…S.pb(“sm”),background:NEON+“22”,color:NEON,border:`1px solid ${NEON}33`}}>데이터 보기</button>
+</div>
+<div style={S.body}>
+{plants.length===0?(
+<div style={{textAlign:“center”,padding:60,color:GRAY}}>
+<div style={{display:“flex”,justifyContent:“center”,marginBottom:16}}><PlantIc type="sprout" sz={60} c={DARK4}/></div>
+<div style={{fontSize:14,color:WHITE,marginBottom:6}}>아직 식물이 없어요</div>
+<div style={{fontSize:12}}>오른쪽 위 + 버튼으로 추가해보세요</div>
+</div>
+):(
+<div style={{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:12}}>
+{feat&&(
+<div style={{gridColumn:“1/-1”,background:DARK3,borderRadius:20,padding:20,position:“relative”,cursor:“pointer”,border:“1px solid #2a2a2a”}}
+onClick={()=>{setSel(feat.id);setTab(“journal”);}}>
+<div style={{position:“absolute”,top:12,right:12,display:“flex”,gap:6}} onClick={e=>e.stopPropagation()}>
+<button onClick={()=>setModal({type:“editPlant”,plant:feat})} style={{width:28,height:28,borderRadius:8,background:DARK4,border:“none”,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”}}><Ic n="edit" sz={13} c={GRAY}/></button>
+<button onClick={()=>setModal({type:“del”,id:feat.id})} style={{width:28,height:28,borderRadius:8,background:”#2a1515”,border:“none”,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”}}><Ic n="trash" sz={13} c={RED}/></button>
+</div>
+<div style={{display:“flex”,alignItems:“center”,gap:16}}>
+<PlantIc type={getPlantDB(feat.name).icon} sz={60} c={NEON}/>
+<div style={{flex:1}}>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:28,color:WHITE,letterSpacing:“0.03em”,lineHeight:1}}>{feat.name}</div>
+<div style={{fontSize:11,color:GRAY,marginTop:2}}>{feat.variety}</div>
+<div style={{display:“flex”,flexWrap:“wrap”,gap:6,marginTop:10}}>
+<span style={S.pill(STAGES[si(feat.stage)].color)}><Ic n="leaf" sz={10} c={STAGES[si(feat.stage)].color}/> {STAGES[si(feat.stage)].label}</span>
+<span style={S.pill(dLeft(feat)<=0?RED:NEON)}><Ic n=“water” sz={10} c={dLeft(feat)<=0?RED:NEON}/> {dLeft(feat)<=0?“오늘 물주기!”:`${dLeft(feat)}일 후`}</span>
+</div>
+</div>
+</div>
+</div>
+)}
+{rest.map(p=>{
+const i=si(p.stage);
+return(
+<div key={p.id} style={{background:DARK3,borderRadius:20,padding:14,position:“relative”,cursor:“pointer”,border:“1px solid #2a2a2a”,minHeight:160}}
+onClick={()=>{setSel(p.id);setTab(“journal”);}}>
+<div style={{position:“absolute”,top:8,right:8,display:“flex”,gap:4}} onClick={e=>e.stopPropagation()}>
+<button onClick={()=>setModal({type:“editPlant”,plant:p})} style={{width:24,height:24,borderRadius:6,background:DARK4,border:“none”,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”}}><Ic n="edit" sz={11} c={GRAY}/></button>
+<button onClick={()=>setModal({type:“del”,id:p.id})} style={{width:24,height:24,borderRadius:6,background:”#2a1515”,border:“none”,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”}}><Ic n="trash" sz={11} c={RED}/></button>
+</div>
+<div style={{marginBottom:8}}><PlantIc type={getPlantDB(p.name).icon} sz={40} c={STAGES[i].color}/></div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:18,color:WHITE,letterSpacing:“0.03em”}}>{p.name}</div>
+<div style={{fontSize:10,color:GRAY,marginBottom:8}}>{p.variety}</div>
+<span style={S.pill(STAGES[i].color)}><Ic n="leaf" sz={9} c={STAGES[i].color}/> {STAGES[i].label}</span>
+<div style={{fontSize:11,color:dLeft(p)<=0?RED:GRAY,marginTop:6}}>
+<Ic n=“water” sz={11} c={dLeft(p)<=0?RED:GRAY}/> {dLeft(p)<=0?“오늘 물주기!”:`${dLeft(p)}일 후`}
+</div>
+</div>
+);
+})}
+</div>
+)}
+</div>
+</div>
+);
+};
+
+const CalTab=()=>{
+const todayY=_now.getFullYear(), todayM=_now.getMonth(), todayD=_now.getDate();
+
+```
+const{fd,dc,yr,mo}=(()=>{
+  const y=calMonth.getFullYear(),m=calMonth.getMonth();
+  return{fd:new Date(y,m,1).getDay(),dc:new Date(y,m+1,0).getDate(),yr:y,mo:m};
+})();
+
+const allEv=plants.flatMap(p=>[
+  {date:getSprout(p),type:"sprout",name:p.name},
+  {date:getBloom(p),type:"bloom",name:p.name},
+]);
+const evOn=(d)=>{
+  const ds=`${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  return allEv.filter(e=>e.date===ds);
+};
+const cells=[...Array(fd).fill(null),...Array.from({length:dc},(_,i)=>i+1)];
+const upcoming=allEv.filter(e=>e.date>=TODAY).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
+const isThisMonth=(yr===todayY&&mo===todayM);
+return(
+  <div style={S.body}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+      <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()-1))} style={{background:DARK3,border:"none",color:WHITE,borderRadius:10,width:36,height:36,fontSize:18,cursor:"pointer"}}>‹</button>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{fontFamily:"'Bebas Neue',cursive",fontSize:24,color:WHITE,letterSpacing:"0.05em"}}>{yr}년 {MONTH[mo]}</div>
+        {!isThisMonth&&(
+          <button onClick={()=>setCalMonth(new Date(todayY,todayM))}
+            style={{fontSize:10,color:NEON,background:NEON+"22",border:`1px solid ${NEON}44`,borderRadius:8,padding:"3px 8px",cursor:"pointer",fontFamily:"'Noto Sans KR',sans-serif"}}>
+            오늘
+          </button>
+        )}
+      </div>
+      <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()+1))} style={{background:DARK3,border:"none",color:WHITE,borderRadius:10,width:36,height:36,fontSize:18,cursor:"pointer"}}>›</button>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3,marginBottom:4}}>
+      {["일","월","화","수","목","금","토"].map(d=><div key={d} style={{textAlign:"center",fontSize:10,color:GRAY,padding:"3px 0"}}>{d}</div>)}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3,marginBottom:14}}>
+      {cells.map((day,i)=>{
+        if(!day) return <div key={`b${i}`}/>;
+        const isToday=isThisMonth&&day===todayD;
+        const evts=evOn(day);
+        const hasSprout=evts.some(e=>e.type==="sprout"), hasBloom=evts.some(e=>e.type==="bloom");
+        return(
+          <div key={day} style={{aspectRatio:"1",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:isToday?NEON:evts.length?DARK4:DARK3,border:isToday?"none":evts.length?`1px solid ${hasBloom?"#FF6EB4":NEON}44`:"1px solid #222"}}>
+            <span style={{fontSize:11,color:isToday?DARK:evts.length?WHITE:GRAY,fontWeight:isToday?700:400}}>{day}</span>
+            {evts.length>0&&(
+              <div style={{display:"flex",gap:2,marginTop:2}}>
+                {hasSprout&&<div style={{width:5,height:5,borderRadius:"50%",background:NEON}}/>}
+                {hasBloom&&<div style={{width:5,height:5,borderRadius:"50%",background:"#FF6EB4"}}/>}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+    <div style={{display:"flex",gap:16,padding:"10px 14px",background:DARK3,borderRadius:10,marginBottom:18,fontSize:11,color:GRAY,alignItems:"center"}}>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:"50%",background:NEON}}/> 발아 예정</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:"50%",background:"#FF6EB4"}}/> 개화 예정</span>
+      <span style={{display:"flex",alignItems:"center",gap:4,marginLeft:"auto"}}><div style={{width:8,height:8,borderRadius:2,background:NEON}}/> 오늘</span>
+    </div>
+    <div style={{fontFamily:"'Bebas Neue',cursive",fontSize:20,color:WHITE,marginBottom:10}}>예정된 이벤트</div>
+    {upcoming.length===0
+      ?<div style={{color:GRAY,fontSize:13,textAlign:"center",padding:24}}>예정된 이벤트가 없어요</div>
+      :upcoming.map((e,i)=>{
+        const dl=Math.ceil((new Date(e.date)-new Date(TODAY))/86400000);
+        const isSprout=e.type==="sprout";
+        const db=getPlantDB(e.name);
+        return(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:DARK3,borderRadius:12,marginBottom:8,border:"1px solid #2a2a2a"}}>
+            <div style={{width:40,height:40,borderRadius:10,background:isSprout?NEON+"22":"#FF6EB422",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <Ic n={isSprout?"sprout":"flower"} sz={20} c={isSprout?NEON:"#FF6EB4"}/>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,color:WHITE,fontWeight:500}}>{e.name}</div>
+              <div style={{fontSize:11,color:GRAY}}>{isSprout?`발아 예정 (파종 후 ${db.sproutDays}일)`:`개화 예정 (파종 후 ${db.bloomDays}일)`} · {e.date}</div>
+            </div>
+            <div style={{fontSize:12,color:dl<=7?NEON:GRAY,fontWeight:700}}>{dl<=0?"오늘!":`D-${dl}`}</div>
+          </div>
+        );
+      })
+    }
+  </div>
+);
+```
+
+};
+
+const JournalTab=()=>{
+if(!plant) return(
+<div style={{textAlign:“center”,paddingTop:80,color:GRAY}}>
+<div style={{display:“flex”,justifyContent:“center”,marginBottom:16}}><PlantIc type="sprout" sz={56} c={DARK4}/></div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:22,color:WHITE}}>식물을 선택하세요</div>
+<div style={{fontSize:12,marginTop:8}}>홈에서 카드를 눌러보세요</div>
+</div>
+);
+const stI=si(plant.stage), db=getPlantDB(plant.name), gpts=getGrowth(plant.timeline);
+return(
+<div style={S.body}>
+<div style={{display:“flex”,gap:8,marginBottom:14,overflowX:“auto”,paddingBottom:4}}>
+{plants.map(p=>(
+<button key={p.id} onClick={()=>setSel(p.id)}
+style={{padding:“6px 14px”,borderRadius:20,border:“none”,cursor:“pointer”,background:sel===p.id?NEON:DARK3,color:sel===p.id?DARK:GRAY,fontSize:12,whiteSpace:“nowrap”,fontFamily:”‘Noto Sans KR’,sans-serif”,fontWeight:sel===p.id?700:400,flexShrink:0,display:“flex”,alignItems:“center”,gap:6}}>
+<PlantIc type={getPlantDB(p.name).icon} sz={14} c={sel===p.id?DARK:GRAY} sw={1.6}/>
+{p.name}
+</button>
+))}
+</div>
+{}
+<div style={{...S.card,marginBottom:14}}>
+<div style={{display:“flex”,justifyContent:“space-between”,marginBottom:12}}>
+{STAGES.map((st,i)=>(
+<div key={st.id} style={{textAlign:“center”,opacity:i<=stI?1:0.3}}>
+<div style={{display:“flex”,justifyContent:“center”,marginBottom:4}}>
+<Ic n={i===0?“seed”:i===1?“sprout”:i===2?“leaf”:“flower”} sz={22} c={i<=stI?st.color:GRAY}/>
+</div>
+<div style={{fontSize:9,color:i<=stI?st.color:GRAY}}>{st.label}</div>
+{i===stI&&<div style={{width:4,height:4,borderRadius:“50%”,background:st.color,margin:“4px auto 0”}}/>}
+</div>
+))}
+</div>
+<div style={{height:3,background:DARK4,borderRadius:4,overflow:“hidden”}}>
+<div style={{height:“100%”,width:`${((stI+1)/4)*100}%`,background:`linear-gradient(90deg,${NEON},#4AFF8A)`,borderRadius:4}}/>
+</div>
+<div style={{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:8,marginTop:12}}>
+<div style={{background:DARK4,borderRadius:8,padding:“8px 10px”}}>
+<div style={{fontSize:9,color:GRAY,marginBottom:3,display:“flex”,alignItems:“center”,gap:4}}><Ic n="sprout" sz={10} c={NEON}/> 발아 예정</div>
+<div style={{fontSize:12,color:WHITE,fontWeight:600}}>{getSprout(plant)}</div>
+<div style={{fontSize:9,color:GRAY}}>파종 후 {db.sproutDays}일 기준</div>
+</div>
+<div style={{background:DARK4,borderRadius:8,padding:“8px 10px”}}>
+<div style={{fontSize:9,color:GRAY,marginBottom:3,display:“flex”,alignItems:“center”,gap:4}}><Ic n="flower" sz={10} c="#FF6EB4"/> 개화 예정</div>
+<div style={{fontSize:12,color:WHITE,fontWeight:600}}>{getBloom(plant)}</div>
+<div style={{fontSize:9,color:GRAY}}>파종 후 {db.bloomDays}일 기준</div>
+</div>
+</div>
+</div>
+{}
+<div style={{display:“flex”,marginBottom:16,background:DARK3,borderRadius:12,padding:3}}>
+{[{k:“timeline”,ic:“book”,l:“일지”},{k:“checklist”,ic:“check”,l:“단계”},{k:“graph”,ic:“chart”,l:“그래프”}].map(t=>(
+<button key={t.k} onClick={()=>setJsub(t.k)}
+style={{flex:1,padding:“8px 0”,borderRadius:10,border:“none”,cursor:“pointer”,background:jsub===t.k?DARK4:“transparent”,color:jsub===t.k?NEON:GRAY,fontSize:11,fontFamily:”‘Noto Sans KR’,sans-serif”,fontWeight:jsub===t.k?700:400,display:“flex”,alignItems:“center”,justifyContent:“center”,gap:5}}>
+<Ic n={t.ic} sz={13} c={jsub===t.k?NEON:GRAY}/>{t.l}
+</button>
+))}
+</div>
+{}
+{jsub===“timeline”&&(
+<div>
+{[…plant.timeline].reverse().map(e=>{
+const c=STAGES.find(s=>s.id===e.stage)?.color||NEON;
+const icn=e.stage===“seed”?“seed”:e.stage===“sprout”?“sprout”:e.stage===“bloom”?“flower”:“leaf”;
+return(
+<div key={e.id} style={{display:“flex”,gap:10,marginBottom:14}}>
+<div style={{width:32,height:32,borderRadius:“50%”,background:c+“22”,border:`1.5px solid ${c}`,display:“flex”,alignItems:“center”,justifyContent:“center”,flexShrink:0}}>
+<Ic n={icn} sz={15} c={c}/>
+</div>
+<div style={{flex:1,background:DARK3,borderRadius:12,padding:“10px 14px”,border:“1px solid #2a2a2a”}}>
+<div style={{display:“flex”,justifyContent:“space-between”,marginBottom:4}}>
+<span style={{fontSize:10,color:GRAY}}>{e.date}</span>
+<div style={{display:“flex”,gap:4}}>
+<button onClick={()=>setModal({type:“editEntry”,entry:e})} style={{background:“none”,border:“none”,cursor:“pointer”,padding:2,opacity:0.6}}><Ic n="edit" sz={12} c={GRAY}/></button>
+<button onClick={()=>delEntry(e.id)} style={{background:“none”,border:“none”,cursor:“pointer”,padding:2,opacity:0.6}}><Ic n="trash" sz={12} c={RED}/></button>
+</div>
+</div>
+<div style={{fontSize:13,color:WHITE,lineHeight:1.6}}>{e.note}</div>
+{(e.height!=null||e.leaves!=null)&&(
+<div style={{display:“flex”,gap:6,marginTop:6,flexWrap:“wrap”}}>
+{e.height!=null&&<span style={S.tag(NEON)}>키 {e.height}cm</span>}
+{e.leaves!=null&&<span style={S.tag(”#FF9F43”)}>잎 {e.leaves}장</span>}
+</div>
+)}
+</div>
+</div>
+);
+})}
+<button style={{…S.pb(“o”,true),borderColor:NEON,color:NEON,display:“flex”,alignItems:“center”,justifyContent:“center”,gap:8}}
+onClick={()=>setModal({type:“addEntry”})}>
+<Ic n="plus" sz={14} c={NEON}/>오늘 일지 쓰기
+</button>
+</div>
+)}
+{}
+{jsub===“checklist”&&(
+<div>
+{STAGES.map((stage,i)=>{
+const done=plant.checklist[stage.id], isNext=stI+1===i, isCurr=plant.stage===stage.id;
+const icn=i===0?“seed”:i===1?“sprout”:i===2?“leaf”:“flower”;
+return(
+<div key={stage.id} style={{display:“flex”,alignItems:“center”,justifyContent:“space-between”,padding:“14px 0”,borderBottom:“1px solid #2a2a2a”,opacity:(!done&&!isNext)?0.3:1}}>
+<div style={{display:“flex”,alignItems:“center”,gap:12}}>
+<div style={{width:42,height:42,borderRadius:12,background:done?stage.color+“22”:DARK3,border:`1.5px solid ${done?stage.color:"#333"}`,display:“flex”,alignItems:“center”,justifyContent:“center”}}>
+<Ic n={done?icn:“seed”} sz={20} c={done?stage.color:GRAY}/>
+</div>
+<div>
+<div style={{fontSize:14,color:done?WHITE:GRAY,fontWeight:done?600:400,display:“flex”,alignItems:“center”,gap:6}}>
+{stage.label}
+{isCurr&&<span style={{...S.pill(stage.color),fontSize:9}}>현재</span>}
+</div>
+<div style={{fontSize:10,color:GRAY,marginTop:2}}>파종 후 약 {stage.days}일~</div>
+</div>
+</div>
+<div style={{display:“flex”,gap:6,alignItems:“center”}}>
+{isNext&&<button style={S.pb(“sm”)} onClick={advance}>달성 ✓</button>}
+{done&&!isCurr&&<Ic n="check" sz={18} c={NEON}/>}
+{!done&&!isNext&&<button onClick={()=>forceStage(stage.id)} style={S.pb(“xs”)}>설정</button>}
+</div>
+</div>
+);
+})}
+<div style={{marginTop:14,padding:“12px”,background:DARK3+“88”,borderRadius:12,fontSize:12,color:GRAY,lineHeight:1.7}}>
+<Ic n="leaf" sz={12} c={GRAY}/> 단계를 잘못 설정했다면 ‘설정’ 버튼으로 변경할 수 있어요.
+</div>
+</div>
+)}
+{}
+{jsub===“graph”&&(
+<div>
+<div style={{…S.card,overflowX:“auto”,paddingBottom:8}}><Chart timeline={plant.timeline}/></div>
+{gpts.length>0&&(()=>{
+const last=gpts.at(-1);
+return(
+<div style={{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:10,marginTop:10}}>
+<div style={S.card}>
+<div style={{fontSize:10,color:GRAY,marginBottom:4,display:“flex”,alignItems:“center”,gap:4}}><Ic n="leaf" sz={11} c={GRAY}/> 최근 키</div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:28,color:NEON}}>{last.height??’—’}cm</div>
+</div>
+<div style={S.card}>
+<div style={{fontSize:10,color:GRAY,marginBottom:4,display:“flex”,alignItems:“center”,gap:4}}><Ic n="sprout" sz={11} c={GRAY}/> 최근 잎 수</div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:28,color:”#FF9F43”}}>{last.leaves??’—’}장</div>
+</div>
+</div>
+);
+})()}
+</div>
+)}
+</div>
+);
+};
+
+const SyncTab=()=>{
+const D=SYNC_DATA;
+return(
+<div style={S.body}>
+<div style={{fontSize:12,color:GRAY,marginBottom:16}}>농촌진흥청·농업유전자원·기상청 데이터 기반 · 2026.03</div>
+{}
+<div style={{…S.card,border:“1px solid #1e3a1e”,marginBottom:10}}>
+<div style={{display:“flex”,alignItems:“center”,gap:6,marginBottom:14}}>
+<Ic n="sun" sz={16} c={NEON}/>
+<div style={{fontSize:10,color:NEON,letterSpacing:“0.1em”}}>기상청 · 오늘 날씨 (서울)</div>
+</div>
+<div style={{display:“grid”,gridTemplateColumns:“repeat(4,1fr)”,gap:6,marginBottom:12}}>
+{[
+{ic:“temp”,c:”#FF9F43”,v:D.weather.minTemp,l:“최저기온”},
+{ic:“sun”, c:NEON,     v:D.weather.maxTemp, l:“최고기온”},
+{ic:“rain”,c:”#5BC8FF”,v:D.weather.rain,    l:“강수확률”},
+{ic:“wind”,c:GRAY,     v:D.weather.wind,    l:“풍속”},
+].map(({ic,c,v,l})=>(
+<div key={l} style={{textAlign:“center”,background:DARK4,borderRadius:10,padding:“10px 4px”}}>
+<div style={{display:“flex”,justifyContent:“center”,marginBottom:4}}><Ic n={ic} sz={18} c={c}/></div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:15,color:WHITE}}>{v}</div>
+<div style={{fontSize:8,color:GRAY,marginTop:2}}>{l}</div>
+</div>
+))}
+</div>
+<div style={{fontSize:12,color:”#bbb”,background:DARK4,borderRadius:8,padding:“8px 12px”,lineHeight:1.6,display:“flex”,gap:8,alignItems:“flex-start”}}>
+<Ic n="watering" sz={14} c={GRAY}/> {D.weather.advice}
+</div>
+</div>
+{}
+<div style={{...S.card,marginBottom:10}}>
+<div style={{display:“flex”,alignItems:“center”,gap:6,marginBottom:12}}>
+<Ic n="shovel" sz={16} c="#4AFF8A"/>
+<div style={{fontSize:10,color:”#4AFF8A”,letterSpacing:“0.1em”}}>농촌진흥청 · 3월 농업 정보</div>
+</div>
+<div style={{display:“flex”,alignItems:“center”,gap:10,marginBottom:10}}>
+<div style={{background:NEON+“22”,borderRadius:10,padding:“5px 10px”,fontSize:11,color:NEON,display:“flex”,alignItems:“center”,gap:4}}>
+<Ic n="leaf" sz={11} c={NEON}/>이달의 작물
+</div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:22,color:WHITE}}>{D.rda.cropOfMonth}</div>
+</div>
+<div style={{fontSize:13,color:”#ccc”,marginBottom:10,lineHeight:1.7}}>{D.rda.tip}</div>
+<div style={{fontSize:12,color:RED,background:”#ff000011”,borderRadius:8,padding:“10px 12px”,border:“1px solid #ff000022”,lineHeight:1.6,display:“flex”,gap:8,alignItems:“flex-start”}}>
+<Ic n="bug" sz={14} c={RED}/> {D.rda.pestWarning}
+</div>
+<div style={{fontSize:10,color:”#444”,marginTop:8}}>출처: {D.rda.source}</div>
+</div>
+{}
+<div style={S.card}>
+<div style={{display:“flex”,alignItems:“center”,gap:6,marginBottom:12}}>
+<Ic n="gene" sz={16} c="#FFD700"/>
+<div style={{fontSize:10,color:”#FFD700”,letterSpacing:“0.1em”}}>농업유전자원센터 · 주목 품종</div>
+</div>
+<div style={{fontFamily:”‘Bebas Neue’,cursive”,fontSize:20,color:WHITE,marginBottom:6}}>{D.gene.featured}</div>
+<div style={{fontSize:13,color:”#ccc”,lineHeight:1.7,marginBottom:8}}>{D.gene.desc}</div>
+<div style={{fontSize:12,color:NEON,background:NEON+“11”,borderRadius:8,padding:“8px 12px”,border:`1px solid ${NEON}22`,lineHeight:1.6,display:“flex”,gap:8,alignItems:“flex-start”}}>
+<Ic n="sprout" sz={14} c={NEON}/> {D.gene.tip}
+</div>
+<div style={{fontSize:10,color:”#444”,marginTop:8}}>출처: {D.gene.source}</div>
+</div>
+<div style={{fontSize:10,color:”#444”,textAlign:“center”,marginTop:16}}>2026년 3월 기준 데이터 · 정기 업데이트</div>
+</div>
+);
+};
+
+return(
+<div style={S.app}>
+<style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap'); *{box-sizing:border-box;margin:0;padding:0} ::-webkit-scrollbar{display:none} input::placeholder,textarea::placeholder{color:#444} button:disabled{opacity:0.5;cursor:not-allowed}`}</style>
+
+```
+  {tab==="home"    &&<HomeTab/>}
+  {tab==="calendar"&&<><Hdr t1="성장 " t2="캘린더" sub="발아·개화 예정일을 한눈에"/><CalTab/></>}
+  {tab==="journal" &&<><Hdr t1={plant?plant.name+" ":"식물 "} t2="일기" sub="성장 기록" back/><JournalTab/></>}
+  {tab==="sync"    &&<><Hdr t1="농업 " t2="데이터" sub="농촌진흥청·유전자원·기상청 기반"/><SyncTab/></>}
+
+  <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:DARK2,borderTop:"1px solid #2a2a2a",display:"flex",zIndex:20,padding:"8px 0 16px"}}>
+    {[{id:"home",n:"home",l:"홈"},{id:"calendar",n:"cal",l:"캘린더"},{id:"journal",n:"book",l:"일지"},{id:"sync",n:"sync",l:"데이터"}].map(t=>(
+      <button key={t.id}
+        style={{flex:1,padding:"6px 0",textAlign:"center",fontSize:9,color:tab===t.id?NEON:GRAY,background:"none",border:"none",cursor:"pointer",fontFamily:"'Noto Sans KR',sans-serif",fontWeight:tab===t.id?700:400}}
+        onClick={()=>setTab(t.id)}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:2}}><Ic n={t.n} sz={20} c={tab===t.id?NEON:GRAY}/></div>
+        {t.l}
+      </button>
+    ))}
+  </div>
+
+  {modal?.type==="addPlant" &&<PlantModal mode="add" onSave={addPlant} onClose={()=>setModal(null)}/>}
+  {modal?.type==="editPlant"&&<PlantModal mode="edit" plant={modal.plant} onSave={editPlant} onClose={()=>setModal(null)}/>}
+  {modal?.type==="addEntry" &&<EntryModal mode="add" stage={plant?.stage||"seed"} onSave={addEntry} onClose={()=>setModal(null)}/>}
+  {modal?.type==="editEntry"&&<EntryModal mode="edit" entry={modal.entry} stage={modal.entry.stage} onSave={editEntry} onClose={()=>setModal(null)}/>}
+  {modal?.type==="del"      &&<DelModal onConfirm={()=>delPlant(modal.id)} onClose={()=>setModal(null)}/>}
+</div>
+```
+
+);
+}
+
+```
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+```
+
+  </script>
+</body>
+</html>
